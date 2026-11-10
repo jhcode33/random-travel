@@ -1,0 +1,109 @@
+/* =========================================================
+   기본: 색상 토큰, 리셋, 헤더, 카드, 버튼, 푸터
+   ========================================================= */
+
+:root {
+  /* 페이지 */
+  --bg: #f3f6f1;
+  --card: #ffffff;
+  --ink: #1f2a24;
+  --muted: #66746b;
+  --line: #dfe6dc;
+
+  /* 지도: 육지 (부드러운 초록) */
+  --land: #cfe6b4;
+  --land-metro: #b5d98f;
+  --land-hover: #a9d27c;
+  --land-dim: #f0f3ec;         /* 당첨 외 지역 (흐리게) */
+  --land-line: #8fbf6a;        /* 시·군 경계선 */
+  --province-line: #3f7a3a;    /* 시·도 경계선 (숲 초록) */
+  --land-shadow: rgba(18, 90, 70, .28);
+  --map-ink: #1d3b2a;
+
+  /* 지도: 바다 (에메랄드) */
+  --sea-light: #8fe3d6;
+  --sea: #3cc4b4;
+  --sea-deep: #1f9e9a;
+  --sea-waves: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='32' viewBox='0 0 64 32'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.35' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M4 10 q5 -5 10 0 t10 0'/%3E%3Cpath d='M36 26 q5 -5 10 0 t10 0'/%3E%3C/g%3E%3C/svg%3E");
+
+  /* 강조색 */
+  --accent: #ff6b4a;           /* 선택한 후보 (초록과 잘 구분되는 코랄) */
+  --accent-dark: #e2502f;
+  --accent-soft: #ffe3da;
+  --gold: #ffc23d;             /* 당첨 지역 */
+  --gold-light: #ffe08a;
+  --win: #128c7e;              /* 결과 글자 */
+  --win-soft: #e3f6f2;
+  --danger-soft: #fde2e2;
+  --danger: #c0392b;
+
+  --radius: 16px;
+  --shadow: 0 6px 24px rgba(31, 42, 36, .08);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+[hidden] { display: none !important; }
+
+body {
+  /* Pretendard: 화면용으로 다듬어진 한국어 글꼴 (index.html 에서 불러옴) */
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  word-break: keep-all;          /* 한국어 단어 중간에서 줄바꿈하지 않기 */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- 헤더 + 단계 표시 ---------- */
+.topbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 14px 24px;
+}
+.topbar h1 { margin: 0; font-size: 1.4rem; font-weight: 900; letter-spacing: -.02em; }
+.steps { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
+.steps li {
+  padding: 6px 12px; border-radius: 999px; font-size: .85rem;
+  background: #e4ebe0; color: var(--muted);
+}
+.steps li.active { background: var(--ink); color: #fff; }
+.steps li.done { background: var(--accent-soft); color: var(--accent-dark); }
+
+/* ---------- 카드 ---------- */
+.card {
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 16px; display: flex; flex-direction: column; min-width: 0;
+}
+.card-head { margin-bottom: 10px; }
+.card-head.row { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; }
+.card-head h2 { margin: 0; font-size: 1.15rem; }
+.hint { margin: 4px 0 0; color: var(--muted); font-size: .85rem; }
+
+/* ---------- 버튼 ---------- */
+.btn {
+  font: inherit; border: 1px solid var(--line); background: #fff; color: var(--ink);
+  padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: .9rem;
+  text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+  touch-action: manipulation;
+}
+.btn:hover { background: #f1f5ee; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.btn.primary:hover { background: var(--accent-dark); }
+.btn.big { padding: 12px 28px; font-size: 1.05rem; min-width: 220px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-group.center { justify-content: center; }
+button { touch-action: manipulation; }
+
+/* ---------- 화면 폭에 따라 긴/짧은 문구 바꾸기 (responsive.css 의 600px 이하에서 짧은 문구) ---------- */
+.lbl-short { display: none; }
+
+/* ---------- 푸터 ---------- */
+.foot { text-align: center; color: var(--muted); font-size: .75rem; padding: 8px 16px 16px; }
+.foot a { color: inherit; }

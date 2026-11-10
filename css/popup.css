@@ -1,0 +1,90 @@
+/* =========================================================
+   지역 정보 팝업 (js/ui/region-popup.js)
+   - 기본: 클릭 위치 근처에 뜨는 카드 (left/top 은 JS 가 지정)
+   - .sheet: 휴대폰·세로 태블릿에서 화면 아래 시트
+   ========================================================= */
+
+.region-popup {
+  position: fixed; z-index: 40;
+  width: min(340px, calc(100vw - 24px));
+  max-height: calc(100svh - 24px); overflow-y: auto;
+  background: var(--card); border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(31, 36, 48, .22);
+  padding: 16px 16px 12px;
+  animation: popup-in .18s ease-out;
+}
+@keyframes popup-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* 휴대폰: 아래에서 올라오는 시트 */
+.region-popup.sheet {
+  left: 0; right: 0; bottom: 0; top: auto;
+  width: 100%; max-height: 60svh;
+  border-radius: 18px 18px 0 0;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  animation: sheet-in .22s ease-out;
+}
+.region-popup.sheet::before {           /* 손잡이 */
+  content: ""; display: block; width: 40px; height: 4px; border-radius: 2px;
+  background: var(--line); margin: -6px auto 10px;
+}
+@keyframes sheet-in { from { transform: translateY(100%); } to { transform: none; } }
+
+.popup-close {
+  position: absolute; top: 8px; right: 8px;
+  width: 32px; height: 32px; border: 0; border-radius: 50%;
+  background: transparent; font-size: 1.3rem; line-height: 1; color: var(--muted); cursor: pointer;
+}
+.popup-close:hover { background: var(--bg); }
+
+.popup-subtitle { margin: 0; font-size: .78rem; color: var(--muted); }
+.popup-title { margin: 2px 32px 6px 0; font-size: 1.2rem; font-weight: 900; }
+.popup-summary { margin: 0 0 10px; font-size: .9rem; color: var(--ink); }
+
+/* 정보 표 */
+.popup-info { margin: 0; display: grid; gap: 10px; }
+.popup-row dt { font-size: .78rem; font-weight: 700; color: var(--muted); margin-bottom: 3px; }
+.popup-row dd { margin: 0; font-size: .9rem; }
+
+.popup-tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 5px; }
+.popup-tags li {
+  padding: 3px 9px; border-radius: 999px; font-size: .82rem;
+  background: var(--win-soft); color: #1d6f65;
+}
+
+.popup-note { margin: 10px 0 0; font-size: .8rem; color: var(--accent-dark); }
+.popup-actions { margin-top: 12px; }
+.popup-actions .btn { flex: 1; min-width: 120px; }
+.popup-disclaimer { margin: 10px 0 0; font-size: .7rem; color: var(--muted); }
+
+/* =========================================================
+   돌림판 결과 팝업 (js/ui/result-modal.js) — 화면 가운데 <dialog>
+   .is-final 이면 '최종 여행지': 이름 양옆에 🎉
+   ========================================================= */
+.result-modal {
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100svh - 32px);
+  border: 0; border-radius: 20px; padding: 24px 22px 16px;
+  background: var(--card); color: var(--ink);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .25);
+  text-align: center;
+}
+.result-modal[open] { animation: rm-in .35s cubic-bezier(.2, 1.4, .4, 1); }
+.result-modal::backdrop { background: rgba(20, 40, 30, .5); }
+@keyframes rm-in { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+
+.rm-label { margin: 0; font-size: .95rem; color: var(--muted); font-weight: 700; }
+.rm-name {
+  margin: 6px 0 10px; font-size: 1.75rem; font-weight: 800; color: var(--win);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  word-break: keep-all; line-height: 1.3;
+}
+.rm-cheer { display: none; font-size: 1.6rem; }
+.result-modal.is-final .rm-cheer { display: inline-block; animation: cheer .6s ease-in-out 2; }
+.result-modal.is-final .rm-cheer:last-child { transform: scaleX(-1); animation-name: cheer-flip; }
+@keyframes cheer { 50% { transform: rotate(-15deg) scale(1.15); } }
+@keyframes cheer-flip { 50% { transform: scaleX(-1) rotate(-15deg) scale(1.15); } }
+
+.rm-note { margin: -4px 0 10px; font-size: .88rem; color: var(--accent-dark); font-weight: 600; }
+.result-modal .popup-info { text-align: left; background: var(--bg); border-radius: 12px; padding: 12px; }
+.rm-actions { margin-top: 14px; justify-content: center; }
+.rm-actions .btn { flex: 1 1 auto; min-width: 110px; white-space: nowrap; }

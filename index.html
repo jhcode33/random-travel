@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f3f6f1" />
+  <title>랜덤 여행 돌림판</title>
+  <meta name="description" content="대한민국 지도에서 여행 후보를 고르고 돌림판으로 여행지를 정하세요." />
+
+  <!-- 글꼴: Pretendard (가독성 좋은 한국어 글꼴, 필요한 글자만 내려받는 dynamic subset) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+
+  <!-- 스타일: 기본 → 컴포넌트 → 페이지 → 반응형 순서 -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/map.css" />
+  <link rel="stylesheet" href="css/panel.css" />
+  <link rel="stylesheet" href="css/wheel.css" />
+  <link rel="stylesheet" href="css/popup.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <!-- ===== 상단: 제목 + 단계 표시 (js/ui/step-indicator.js) ===== -->
+  <header class="topbar">
+    <h1>🎡 랜덤 여행 돌림판</h1>
+    <ol class="steps">
+      <li id="step-label-1" class="active">① 여행 후보 선택</li>
+      <li id="step-label-2">② 여행지 돌림판</li>
+      <li id="step-label-3">③ 세부 지역 돌림판</li>
+    </ol>
+  </header>
+
+  <!-- ===== 1페이지: 여행 후보 선택 (js/views/select-view.js) ===== -->
+  <main id="view-select" class="page page-select">
+    <section class="card map-card">
+      <div class="card-head row">
+        <div>
+          <h2>여행 후보 고르기</h2>
+          <p class="hint"><span class="lbl-long">지역을 누르면 후보에 담깁니다. 아래 '선택한 여행지'에서 이름을 누르면 여행 정보가 나옵니다. 광역시는 시 전체, 도는 시·군 단위입니다.</span><span class="lbl-short">지역을 눌러 담고, 아래 이름을 누르면 여행 정보가 나와요.</span></p>
+        </div>
+        <div class="toolbar">
+          <div class="target-row">
+            <label for="target-count">후보<span class="lbl-long"> 개수</span></label>
+            <div class="stepper">
+              <button type="button" id="btn-target-dec" aria-label="개수 줄이기">－</button>
+              <input type="number" id="target-count" value="10" inputmode="numeric" />
+              <button type="button" id="btn-target-inc" aria-label="개수 늘리기">＋</button>
+            </div>
+          </div>
+          <div class="btn-group">
+            <button type="button" id="btn-random-fill" class="btn">무작위<span class="lbl-long"> 채우기</span></button>
+            <button type="button" id="btn-clear" class="btn">초기화</button>
+          </div>
+        </div>
+      </div>
+      <div id="select-map-wrap" class="map-wrap">
+        <svg id="select-map" class="map" role="img" aria-label="대한민국 지도"></svg>
+        <div id="app-status" class="app-status">지도를 불러오는 중…</div>
+        <div class="zoom-ctrl">
+          <button type="button" data-zoom="in" aria-label="확대">＋</button>
+          <button type="button" data-zoom="out" aria-label="축소">－</button>
+          <button type="button" data-zoom="reset" aria-label="원래 크기">⟲</button>
+        </div>
+        <div class="map-legend" aria-hidden="true">
+          <span><i class="lg-land"></i>시·군</span>
+          <span><i class="lg-metro"></i>광역시</span>
+          <span><i class="lg-selected"></i>선택한 후보</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 하단: 선택한 여행지 목록 + 다음 버튼 (js/ui/selection-panel.js) -->
+    <section class="tray" aria-label="선택한 여행지">
+      <div class="tray-head">
+        <strong>선택한 여행지</strong>
+        <span id="count" class="count">0 / 10</span>
+      </div>
+      <ul id="chips" class="chips" aria-live="polite"></ul>
+      <button type="button" id="btn-next-pick" class="btn primary tray-next" disabled>지역을 선택하세요</button>
+    </section>
+  </main>
+
+  <!-- ===== 2페이지: 여행지 돌림판 (js/views/pick-view.js) ===== -->
+  <main id="view-pick" class="page page-pick" hidden>
+    <section class="card pick-card">
+      <div class="wheel-box">
+        <div class="wheel-holder big" role="img" aria-label="여행지 돌림판">
+          <canvas id="pick-wheel" class="wheel"></canvas>
+        </div>
+        <button type="button" id="btn-spin-pick" class="btn primary big spin-btn">꾹 눌러 돌리기</button>
+        <div id="pick-power" class="power-meter" aria-hidden="true"><span class="power-fill"></span></div>
+        <div id="pick-result" class="result" hidden>
+          <p id="pick-result-label" class="result-label"></p>
+          <p id="pick-result-name" class="result-name"></p>
+          <div class="btn-group center">
+            <button type="button" id="pick-info" class="btn" data-opens-popup>지역 정보 보기</button>
+            <a id="pick-search" class="btn" target="_blank" rel="noopener">여행 정보 검색</a>
+          </div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <button type="button" id="btn-back-select" class="btn">← 이전<span class="lbl-long">: 후보 선택</span></button>
+        <button type="button" id="btn-next-detail" class="btn primary" disabled>다음<span class="lbl-long">: 세부 지역 돌림판</span> →</button>
+        <button type="button" id="btn-restart-pick" class="btn primary" hidden>처음부터 다시</button>
+      </nav>
+    </section>
+  </main>
+
+  <!-- ===== 3페이지: 세부 지역 돌림판 (js/views/detail-view.js) ===== -->
+  <main id="view-detail" class="page page-detail" hidden>
+    <section class="card map-card">
+      <div class="card-head">
+        <h2 id="detail-title">세부 지역 지도</h2>
+        <p class="hint">돌림판 결과가 지도에 금색으로 표시됩니다.</p>
+      </div>
+      <div id="detail-map-wrap" class="map-wrap">
+        <svg id="detail-map" class="map" role="img" aria-label="세부 지역 지도"></svg>
+        <div class="zoom-ctrl">
+          <button type="button" data-zoom="in" aria-label="확대">＋</button>
+          <button type="button" data-zoom="out" aria-label="축소">－</button>
+          <button type="button" data-zoom="reset" aria-label="원래 크기">⟲</button>
+        </div>
+        <div class="map-legend" aria-hidden="true">
+          <span><i class="lg-land"></i><span id="detail-legend-kind">구·군</span></span>
+          <span><i class="lg-winner"></i>당첨</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>세부 지역 돌림판 <span id="detail-count" class="count"></span></h2>
+      </div>
+      <div class="wheel-box">
+        <div class="wheel-holder">
+          <canvas id="detail-wheel" class="wheel"></canvas>
+        </div>
+        <button type="button" id="btn-spin-detail" class="btn primary big spin-btn">꾹 눌러 돌리기</button>
+        <div id="detail-power" class="power-meter" aria-hidden="true"><span class="power-fill"></span></div>
+        <p class="hint spin-hint">버튼을 꾹 누르고 있다가 떼세요. 게이지가 클수록 세게 돕니다.</p>
+        <div id="detail-result" class="result" hidden>
+          <p id="detail-result-label" class="result-label"></p>
+          <p id="detail-result-name" class="result-name"></p>
+          <div class="btn-group center">
+            <button type="button" id="detail-info" class="btn" data-opens-popup>지역 정보 보기</button>
+            <a id="detail-search" class="btn" target="_blank" rel="noopener">여행 정보 검색</a>
+          </div>
+        </div>
+      </div>
+      <nav class="page-nav">
+        <button type="button" id="btn-back-pick" class="btn">← 이전<span class="lbl-long">: 여행지 돌림판</span></button>
+        <button type="button" id="btn-restart" class="btn primary">처음부터 다시</button>
+      </nav>
+    </section>
+  </main>
+
+  <!-- ===== 지역 정보 팝업 (js/ui/region-popup.js, 내용: data/region-info.json) ===== -->
+  <aside id="region-popup" class="region-popup" role="dialog" aria-labelledby="popup-title" hidden>
+    <button type="button" id="popup-close" class="popup-close" aria-label="닫기">×</button>
+    <p id="popup-subtitle" class="popup-subtitle"></p>
+    <h3 id="popup-title" class="popup-title"></h3>
+    <p id="popup-summary" class="popup-summary"></p>
+    <dl class="popup-info">
+      <div id="popup-season-row" class="popup-row">
+        <dt>🗓 여행하기 좋은 시기</dt>
+        <dd id="popup-season"></dd>
+      </div>
+      <div id="popup-highlights-row" class="popup-row">
+        <dt>📍 주요 여행지</dt>
+        <dd><ul id="popup-highlights" class="popup-tags"></ul></dd>
+      </div>
+      <div id="popup-foods-row" class="popup-row">
+        <dt>🍽 대표 먹거리</dt>
+        <dd id="popup-foods"></dd>
+      </div>
+    </dl>
+    <p id="popup-note" class="popup-note"></p>
+    <div id="popup-actions" class="btn-group popup-actions"></div>
+    <p class="popup-disclaimer">참고용 정보입니다. 축제·운영 일정은 방문 전 확인하세요.</p>
+  </aside>
+
+  <!-- ===== 돌림판 결과 팝업 (js/ui/result-modal.js) ===== -->
+  <dialog id="result-modal" class="result-modal" aria-labelledby="result-modal-title">
+    <p id="result-modal-label" class="rm-label"></p>
+    <h2 id="result-modal-title" class="rm-name">
+      <span class="rm-cheer" aria-hidden="true">🎉</span>
+      <span id="result-modal-name"></span>
+      <span class="rm-cheer" aria-hidden="true">🎉</span>
+    </h2>
+    <p id="result-modal-note" class="rm-note"></p>
+    <p id="result-modal-summary" class="popup-summary"></p>
+    <dl class="popup-info">
+      <div id="result-modal-season-row" class="popup-row">
+        <dt>🗓 여행하기 좋은 시기</dt>
+        <dd id="result-modal-season"></dd>
+      </div>
+      <div id="result-modal-highlights-row" class="popup-row">
+        <dt>📍 주요 여행지</dt>
+        <dd><ul id="result-modal-highlights" class="popup-tags"></ul></dd>
+      </div>
+      <div id="result-modal-foods-row" class="popup-row">
+        <dt>🍽 대표 먹거리</dt>
+        <dd id="result-modal-foods"></dd>
+      </div>
+    </dl>
+    <div class="btn-group rm-actions">
+      <a id="result-modal-search" class="btn" target="_blank" rel="noopener">여행 정보 검색</a>
+      <button type="button" id="result-modal-restart" class="btn">처음부터 다시</button>
+      <button type="button" id="result-modal-primary" class="btn primary">확인</button>
+    </div>
+    <p class="popup-disclaimer">참고용 정보입니다. 축제·운영 일정은 방문 전 확인하세요.</p>
+  </dialog>
+
+  <footer class="foot">
+    지도 데이터: <a href="https://github.com/southkorea/southkorea-maps" target="_blank" rel="noopener">southkorea-maps</a>
+    (통계청 2013 경계, 최신 행정구역 명칭 일부 보정)
+  </footer>
+
+  <!-- 외부 라이브러리 (전역 d3, topojson) -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <!-- 앱 (ES 모듈) -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

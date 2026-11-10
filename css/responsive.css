@@ -1,0 +1,89 @@
+/* =========================================================
+   반응형
+   - 1100px 이하 : 작은 데스크톱 / 가로 태블릿
+   - 900px 이하  : 세로 태블릿·휴대폰 (3페이지: 지도 위, 돌림판 아래)  ← js/config.js NARROW_MEDIA_QUERY 와 맞출 것
+   - 600px 이하  : 휴대폰
+   - 터치 기기, 높이가 낮은 화면
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .page { padding: 0 16px 16px; }
+  .page-select { padding-bottom: 0; }
+  .page-detail { gap: 14px; }
+  .topbar { padding: 12px 16px; }
+}
+
+@media (max-width: 900px) {
+  .page-detail { grid-template-columns: 1fr; }
+  .page-detail .map-wrap { flex: none; min-height: 0; height: min(55svh, 560px); }
+  .page-select .map-wrap { min-height: max(360px, calc(100svh - 330px)); }
+
+  /* 트레이: 칩 목록을 한 줄 전체로 */
+  .tray { grid-template-columns: 1fr auto; }
+  .tray .chips { grid-column: 1 / -1; grid-row: 2; }
+  .tray-next { min-width: 0; }
+}
+
+@media (max-width: 600px) {
+  .topbar { padding: 10px 12px; gap: 8px; }
+  .topbar h1 { font-size: 1.15rem; }
+  .steps { gap: 4px; width: 100%; }
+  .steps li { flex: 1; text-align: center; padding: 5px 4px; font-size: .72rem; }
+  .page { padding: 0 10px 12px; }
+  .page-select { padding-bottom: 0; }
+  .card { padding: 12px; border-radius: 14px; }
+  .card-head h2 { font-size: 1.05rem; }
+  .hint { font-size: .78rem; }
+  .toolbar { width: 100%; justify-content: space-between; }
+  .map-wrap { border-radius: 10px; }
+  .page-select .map-wrap { min-height: max(320px, calc(100svh - 380px)); }
+  .zoom-ctrl { right: 8px; top: 8px; }
+  .map-legend { left: 8px; bottom: 8px; font-size: .7rem; padding: 4px 8px; gap: 8px; }
+  .btn.big { width: 100%; min-width: 0; }
+  .wheel-holder.big { width: 100%; min-width: 0; }
+  .result { padding: 10px 12px; }
+  .result-name { font-size: 1.35rem; }
+  .tray { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); gap: 8px; }
+  .page-nav .btn { flex: 1; min-width: 0; }
+  .stepper input { font-size: 16px; }   /* iOS 입력 시 자동 확대 방지 */
+
+  /* 긴 문구 대신 짧은 문구 (예: '다음: 여행지 돌림판 →' → '다음 →') */
+  .lbl-long { display: none; }
+  .lbl-short { display: inline; }
+
+  /* 1페이지 머리 부분을 줄여 지도를 더 크게 */
+  .page-select .card-head { margin-bottom: 8px; }
+  .page-select .card-head.row { gap: 6px; }
+  .toolbar { gap: 8px; }
+  .target-row { gap: 6px; }
+  .target-row label { font-size: .85rem; }
+}
+
+/* 터치 기기: 누르기 쉬운 크기 */
+@media (pointer: coarse) {
+  .zoom-ctrl button { width: 42px; height: 42px; }
+  .chips .chip-name { padding: 8px 2px 8px 12px; }
+  .chips .chip-remove { width: 30px; height: 30px; font-size: 1.05rem; }
+  .stepper button { width: 42px; }
+  .stepper input { padding: 9px 0; }
+  .btn { padding: 10px 14px; }
+}
+
+/* 가로로 눕힌 휴대폰 (폭 900px 이하, 높이 낮음): 지도·돌림판이 화면 높이를 넘지 않게 */
+@media (max-width: 900px) and (max-height: 500px) {
+  .topbar { padding: 8px 16px; }
+  .page-select .hint { display: none; }
+  .page-select .map-wrap { min-height: max(180px, calc(100svh - 190px)); }
+  /* 하단 트레이를 한 줄로 (개수 · 선택 목록 · 다음) → 지도를 가리지 않게 */
+  .tray { grid-template-columns: auto minmax(0, 1fr) auto; padding-top: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .tray .chips { grid-column: auto; grid-row: auto; }
+  .page-detail .map-wrap { height: max(240px, calc(100svh - 120px)); }
+  .wheel-holder, .wheel-holder.big { width: min(100%, max(240px, calc(100svh - 150px))); min-width: 0; }
+}
+
+/* 가로 휴대폰처럼 높이가 낮은 화면 */
+@media (min-width: 901px) and (max-height: 600px) {
+  .page-select .map-wrap { min-height: max(300px, calc(100svh - 230px)); }
+  .page-detail .map-wrap { min-height: 0; height: calc(100svh - 150px); flex: none; }
+  .wheel-holder { width: min(100%, calc(100svh - 190px)); }
+}

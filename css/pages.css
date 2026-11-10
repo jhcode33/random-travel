@@ -1,0 +1,34 @@
+/* =========================================================
+   페이지 레이아웃
+   ① .page-select : 큰 지도 + 하단 트레이
+   ② .page-pick   : 가운데 큰 돌림판
+   ③ .page-detail : 왼쪽 세부 지역 지도 / 오른쪽 돌림판
+   ========================================================= */
+
+.page { flex: 1; padding: 0 24px 16px; }
+
+/* ---------- ① 후보 선택 ---------- */
+.page-select { display: flex; flex-direction: column; padding-bottom: 0; }
+.page-select .map-card { flex: 1; border-radius: var(--radius) var(--radius) 0 0; }
+.page-select .map-wrap { flex: 1; min-height: max(420px, calc(100svh - 300px)); }
+
+/* ---------- ② 여행지 돌림판 ---------- */
+.page-pick { display: flex; justify-content: center; }
+.pick-card { width: min(100%, 760px); align-items: stretch; }
+.pick-card .card-head { text-align: center; }
+.pick-card .card-head.row { justify-content: center; }
+
+/* ---------- ③ 세부 지역 돌림판 ---------- */
+.page-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 20px;
+}
+.page-detail .map-wrap { min-height: 520px; }
+
+/* ---------- 페이지 하단 이동 버튼 (이전 / 다음) ---------- */
+.page-nav {
+  display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line);
+}
+.page-nav .btn { min-width: 160px; }

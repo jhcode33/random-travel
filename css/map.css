@@ -1,0 +1,85 @@
+/* =========================================================
+   지도 (js/map/korea-map.js) — 일러스트 여행 지도 스타일
+   - 육지: 부드러운 초록, 경계선: 숲 초록
+   - 바다: 에메랄드 그라데이션 + 물결 무늬
+   ========================================================= */
+
+.map-wrap {
+  position: relative; flex: 1; min-height: 420px;
+  border-radius: 14px; overflow: hidden;
+  /* 물결 무늬(위) + 에메랄드 바다(아래) */
+  background:
+    var(--sea-waves) 0 0 / 64px 32px repeat,
+    radial-gradient(120% 90% at 30% 20%, var(--sea-light), var(--sea) 55%, var(--sea-deep));
+  box-shadow: inset 0 0 0 1px rgba(0, 80, 70, .12);
+}
+.map {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  cursor: grab; touch-action: none;   /* 지도 안의 드래그·핀치는 지도 이동/확대에 사용 */
+}
+.map:active { cursor: grabbing; }
+
+/* 육지 전체에 살짝 그림자를 줘서 바다 위에 떠 있는 일러스트 느낌 */
+.map .regions { filter: drop-shadow(0 2px 0 var(--land-shadow)); }
+
+/* ---------- 지역 ---------- */
+.map .region {
+  fill: var(--land); stroke: var(--land-line); stroke-linejoin: round;
+  cursor: pointer; transition: fill .15s;
+}
+.map .region.metro { fill: var(--land-metro); }
+.map .region.disabled { cursor: not-allowed; }
+.map .region.dim { fill: var(--land-dim); }
+.map .region.selected { fill: var(--accent); }
+.map .region.winner { fill: var(--gold); animation: region-pulse 1s ease-in-out 3; }
+@keyframes region-pulse { 50% { fill: var(--gold-light); } }
+
+/* 터치 기기에서는 탭 후 hover 색이 남지 않도록 hover 가능한 기기에만 적용 */
+@media (hover: hover) {
+  .map .region:not(.selected):not(.winner):hover { fill: var(--land-hover); }
+  .map .region.selected:hover { fill: var(--accent-dark); }
+}
+
+/* 시·도 경계선 */
+.map .outline { fill: none; stroke: var(--province-line); stroke-linejoin: round; pointer-events: none; }
+
+/* ---------- 라벨 ---------- */
+.map .label {
+  font-weight: 700; fill: var(--map-ink); text-anchor: middle; dominant-baseline: central;
+  paint-order: stroke; stroke: rgba(255,255,255,.92); stroke-linejoin: round;
+  pointer-events: none; user-select: none;
+}
+.map .label.on-dark { fill: #fff; stroke: rgba(0,0,0,.38); }
+
+/* ---------- 확대/축소 버튼 (js/ui/zoom-controls.js) ---------- */
+.zoom-ctrl {
+  position: absolute; right: 12px; top: 12px; display: flex; flex-direction: column; gap: 6px;
+}
+.zoom-ctrl button {
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.92); font-size: 1.1rem; cursor: pointer; box-shadow: var(--shadow);
+}
+.zoom-ctrl button:hover { background: #fff; }
+
+/* ---------- 지도 범례 ---------- */
+.map-legend {
+  position: absolute; left: 12px; bottom: 12px;
+  display: flex; gap: 10px; flex-wrap: wrap;
+  padding: 6px 10px; border-radius: 10px;
+  background: rgba(255,255,255,.88); font-size: .75rem; color: var(--ink);
+  pointer-events: none;
+}
+.map-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.map-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,.1); }
+.map-legend .lg-land { background: var(--land); }
+.map-legend .lg-metro { background: var(--land-metro); }
+.map-legend .lg-selected { background: var(--accent); }
+.map-legend .lg-winner { background: var(--gold); }
+
+/* ---------- 로딩/오류 안내 (js/main.js) ---------- */
+.app-status {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  padding: 24px; text-align: center; color: #fff; font-size: .95rem; font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,.3);
+}
+.app-status.error { color: #fff; background: rgba(192, 57, 43, .85); }
