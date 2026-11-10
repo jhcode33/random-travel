@@ -1,17 +1,19 @@
 /* =========================================================
    지도 (js/map/korea-map.js) — 일러스트 여행 지도 스타일
-   - 육지: 부드러운 초록, 경계선: 숲 초록
-   - 바다: 에메랄드 그라데이션 + 물결 무늬
+   - 바다: 맑은 하늘색 + 물결 무늬
+   - 육지: 고르지 않은 곳은 회색, 후보로 고른 곳은 시·도별 파스텔 색
+   - 경계선: 흰 선 (시·군은 가늘게, 시·도는 굵게) + 바다 위에 살짝 그림자
+   - 다녀온 곳: 회청색 사선 무늬
    ========================================================= */
 
 .map-wrap {
   position: relative; flex: 1; min-height: 420px;
   border-radius: 14px; overflow: hidden;
-  /* 물결 무늬(위) + 에메랄드 바다(아래) */
+  /* 물결 무늬(위) + 하늘색 바다(아래) */
   background:
     var(--sea-waves) 0 0 / 64px 32px repeat,
     radial-gradient(120% 90% at 30% 20%, var(--sea-light), var(--sea) 55%, var(--sea-deep));
-  box-shadow: inset 0 0 0 1px rgba(0, 80, 70, .12);
+  box-shadow: inset 0 0 0 1px rgba(40, 110, 150, .12);
 }
 .map {
   position: absolute; inset: 0; width: 100%; height: 100%;
@@ -19,29 +21,38 @@
 }
 .map:active { cursor: grabbing; }
 
-/* 육지 전체에 살짝 그림자를 줘서 바다 위에 떠 있는 일러스트 느낌 */
-.map .regions { filter: drop-shadow(0 2px 0 var(--land-shadow)); }
+/* 육지 전체에 그림자를 줘서 바다 위에 떠 있는 일러스트 느낌 */
+.map .regions { filter: drop-shadow(0 3px 0 var(--land-shadow)); }
 
 /* ---------- 지역 ---------- */
 .map .region {
   fill: var(--land); stroke: var(--land-line); stroke-linejoin: round;
-  cursor: pointer; transition: fill .15s;
+  cursor: pointer; transition: fill .15s, filter .15s;
 }
 .map .region.metro { fill: var(--land-metro); }
 .map .region.disabled { cursor: not-allowed; }
 .map .region.dim { fill: var(--land-dim); }
-.map .region.selected { fill: var(--accent); }
+/* 후보: 시·도별 색 (korea-map.js 가 --region-color 로 넣어 줌. 없으면 강조색) */
+.map .region.selected { fill: var(--region-color, var(--accent)); }
+/* 다녀온 곳: index.html 의 <pattern id="visited-hatch"> 무늬 */
+.map .region.visited { fill: url(#visited-hatch) var(--visited); }
 .map .region.winner { fill: var(--gold); animation: region-pulse 1s ease-in-out 3; }
 @keyframes region-pulse { 50% { fill: var(--gold-light); } }
 
 /* 터치 기기에서는 탭 후 hover 색이 남지 않도록 hover 가능한 기기에만 적용 */
 @media (hover: hover) {
-  .map .region:not(.selected):not(.winner):hover { fill: var(--land-hover); }
-  .map .region.selected:hover { fill: var(--accent-dark); }
+  .map .region:not(.selected):not(.winner):not(.visited):not(.disabled):hover { fill: var(--land-hover); }
+  .map .region.selected:hover,
+  .map .region.visited:hover { filter: brightness(.94); }
 }
+/* '다녀온 곳 표시' 모드에서는 모든 지역을 누를 수 있다 */
+.map-wrap.mode-visited .map .region { cursor: pointer; }
 
-/* 시·도 경계선 */
-.map .outline { fill: none; stroke: var(--province-line); stroke-linejoin: round; pointer-events: none; }
+/* 시·도 경계선: 회색 테두리 위에 흰 굵은 선 (두 겹이라 시·군 경계보다 또렷함) */
+.map .outline-edge,
+.map .outline { fill: none; stroke-linejoin: round; stroke-linecap: round; pointer-events: none; }
+.map .outline-edge { stroke: var(--province-edge); }
+.map .outline { stroke: var(--province-line); }
 
 /* ---------- 라벨 ---------- */
 .map .label {
@@ -49,7 +60,7 @@
   paint-order: stroke; stroke: rgba(255,255,255,.92); stroke-linejoin: round;
   pointer-events: none; user-select: none;
 }
-.map .label.on-dark { fill: #fff; stroke: rgba(0,0,0,.38); }
+.map .label.on-dark { fill: #fff; stroke: rgba(30, 45, 60, .55); }
 
 /* ---------- 확대/축소 버튼 (js/ui/zoom-controls.js) ---------- */
 .zoom-ctrl {
@@ -66,20 +77,24 @@
   position: absolute; left: 12px; bottom: 12px;
   display: flex; gap: 10px; flex-wrap: wrap;
   padding: 6px 10px; border-radius: 10px;
-  background: rgba(255,255,255,.88); font-size: .75rem; color: var(--ink);
+  background: rgba(255,255,255,.9); font-size: .75rem; color: var(--ink);
   pointer-events: none;
 }
 .map-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .map-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,.1); }
 .map-legend .lg-land { background: var(--land); }
 .map-legend .lg-metro { background: var(--land-metro); }
-.map-legend .lg-selected { background: var(--accent); }
+.map-legend .lg-selected {   /* 시·도마다 색이 다르다는 뜻으로 여러 색을 함께 */
+  background: conic-gradient(#ffd45e 0 25%, #9ed36a 0 50%, #f491b4 0 75%, #7fc4ee 0);
+}
+.map-legend .lg-visited {
+  background: repeating-linear-gradient(45deg, var(--visited) 0 3px, #c7d0da 3px 5px);
+}
 .map-legend .lg-winner { background: var(--gold); }
 
 /* ---------- 로딩/오류 안내 (js/main.js) ---------- */
 .app-status {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  padding: 24px; text-align: center; color: #fff; font-size: .95rem; font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0,0,0,.3);
+  padding: 24px; text-align: center; color: var(--ink); font-size: .95rem; font-weight: 700;
 }
 .app-status.error { color: #fff; background: rgba(192, 57, 43, .85); }

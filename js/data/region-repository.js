@@ -240,6 +240,7 @@ function describeUnit(key, n) {
     label: metro ? P.name : `${P.short} ${n.city}`,   // 목록·돌림판
     short: metro ? P.short : n.city,                   // 지도 라벨
     alwaysLabel: metro,                                // 광역시 라벨 우선 표시
+    color: P.color,                                    // 선택했을 때 칠할 색 (시·도별)
   };
 }
 

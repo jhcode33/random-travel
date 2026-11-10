@@ -53,7 +53,9 @@
 
   /* 1페이지 머리 부분을 줄여 지도를 더 크게 */
   .page-select .card-head { margin-bottom: 8px; }
-  .page-select .card-head.row { gap: 6px; }
+  .mode-switch { width: 100%; }
+  .mode-btn { flex: 1; padding: 7px 8px; font-size: .84rem; }
+  .toolbar { margin-top: 8px; }
   .toolbar { gap: 8px; }
   .target-row { gap: 6px; }
   .target-row label { font-size: .85rem; }

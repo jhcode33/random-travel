@@ -4,7 +4,38 @@
    ========================================================= */
 
 /* ---------- 지도 카드 상단 도구 ---------- */
-.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+
+/* ---------- 1페이지 머리: 제목 + 모드 전환 / 안내 + 도구 ---------- */
+.select-head .head-top { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; }
+/* 넓은 화면: 안내 문구와 도구 모음을 한 줄에 */
+@media (min-width: 901px) {
+  .select-head {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: center;
+  }
+  .select-head .head-top { grid-column: 1 / -1; }
+  .select-head .hint { grid-column: 1; }
+  .select-head .toolbar { grid-column: 2; margin-top: 4px; justify-content: flex-end; }
+}
+
+/* 지도 클릭 모드 전환 (후보 고르기 / 다녀온 곳 표시) */
+.mode-switch {
+  display: inline-flex; padding: 3px; gap: 3px; border-radius: 999px;
+  background: #e8edf1;
+}
+.mode-btn {
+  font: inherit; font-size: .88rem; font-weight: 600; color: var(--muted);
+  border: 0; border-radius: 999px; padding: 7px 14px; background: transparent; cursor: pointer;
+  white-space: nowrap;
+}
+.mode-btn:hover { color: var(--ink); }
+.mode-btn[aria-checked="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.mode-btn[aria-checked="true"]#mode-visited { background: var(--visited); color: #fff; }
+.mode-count {
+  display: inline-block; min-width: 1.6em; margin-left: 2px; padding: 0 6px; border-radius: 999px;
+  background: rgba(0,0,0,.08); font-size: .78rem; text-align: center;
+}
+#mode-visited[aria-checked="true"] .mode-count { background: rgba(255,255,255,.3); }
 
 .target-row { display: flex; align-items: center; gap: 8px; }
 .target-row label { font-weight: 700; font-size: .9rem; }
@@ -46,8 +77,10 @@
 }
 .chips li {
   flex: none; display: inline-flex; align-items: center;
-  border-radius: 999px; background: var(--accent-soft); color: var(--accent-dark);
-  font-size: .85rem; font-weight: 500;
+  border-radius: 999px; color: var(--ink);
+  /* 지도에 칠해진 시·도 색과 같은 색 (selection-panel.js 가 --chip-color 를 넣음) */
+  background: var(--chip-color, var(--accent-soft));
+  font-size: .85rem; font-weight: 600;
 }
 .chips .chip-name {
   border: 0; background: none; color: inherit; font: inherit; cursor: pointer;

@@ -4,27 +4,31 @@
 
 :root {
   /* 페이지 */
-  --bg: #f3f6f1;
+  --bg: #f3f6f8;
   --card: #ffffff;
-  --ink: #1f2a24;
-  --muted: #66746b;
-  --line: #dfe6dc;
+  --ink: #1f2a33;
+  --muted: #66727d;
+  --line: #dde4ea;
 
-  /* 지도: 육지 (부드러운 초록) */
-  --land: #cfe6b4;
-  --land-metro: #b5d98f;
-  --land-hover: #a9d27c;
-  --land-dim: #f0f3ec;         /* 당첨 외 지역 (흐리게) */
-  --land-line: #8fbf6a;        /* 시·군 경계선 */
-  --province-line: #3f7a3a;    /* 시·도 경계선 (숲 초록) */
-  --land-shadow: rgba(18, 90, 70, .28);
-  --map-ink: #1d3b2a;
+  /* 지도: 육지
+     고르지 않은 곳은 회색, 후보로 고르면 시·도별 파스텔 색(js/data/provinces.js 의 color).
+     경계선은 일러스트 지도처럼 흰 선: 시·군은 가늘게, 시·도는 굵게 */
+  --land: #dcdfd9;
+  --land-metro: #cdd1c9;       /* 광역시: 조금 더 진한 회색 */
+  --land-hover: #c4c9c0;
+  --land-dim: #eef0ec;         /* 당첨 외 지역 (흐리게) */
+  --land-line: #ffffff;        /* 시·군 경계선 */
+  --province-line: #ffffff;    /* 시·도 경계선 (굵게) */
+  --province-edge: #9aa6ae;    /* 시·도 경계 흰 선 양옆의 회색 테두리 */
+  --land-shadow: rgba(52, 96, 128, .28);
+  --map-ink: #26313b;
+  --visited: #8e9bab;          /* 다녀온 곳 (무늬 바탕색, index.html 의 #visited-hatch 와 맞출 것) */
 
-  /* 지도: 바다 (에메랄드) */
-  --sea-light: #8fe3d6;
-  --sea: #3cc4b4;
-  --sea-deep: #1f9e9a;
-  --sea-waves: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='32' viewBox='0 0 64 32'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.35' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M4 10 q5 -5 10 0 t10 0'/%3E%3Cpath d='M36 26 q5 -5 10 0 t10 0'/%3E%3C/g%3E%3C/svg%3E");
+  /* 지도: 바다 (맑은 하늘색 + 물결) */
+  --sea-light: #e3f5fc;
+  --sea: #c2e7f6;
+  --sea-deep: #a6d9ef;
+  --sea-waves: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='32' viewBox='0 0 64 32'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.7' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M4 10 q5 -5 10 0 t10 0'/%3E%3Cpath d='M36 26 q5 -5 10 0 t10 0'/%3E%3C/g%3E%3C/svg%3E");
 
   /* 강조색 */
   --accent: #ff6b4a;           /* 선택한 후보 (초록과 잘 구분되는 코랄) */
