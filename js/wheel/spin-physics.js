@@ -8,6 +8,8 @@
  *    넘어가거나, 못 넘고 뒤로 살짝 되돌아온다.
  *  - 핀은 돌림판이 도는 방향(시계 방향)으로만 휜다. 기둥이 지나가면 천이 기둥을 스치고 지나가듯
  *    반대쪽으로 튕기지 않고 부드럽게 제자리로 돌아온다 (반동 없음).
+ *    핀 모양은 보이는 것일 뿐 결과에 영향이 없다: 몸통(flapper)은 기둥 위치를 부드럽게 따라가고,
+ *    끝(flapperTip)은 몸통을 조금 늦게 따라와서 천 자락처럼 끌리며 넘어간다.
  *
  * 결과는 미리 정하지 않고, 멈춘 위치(포인터가 가리키는 칸)로 정해진다.
  * 시작 속도에 무작위 값을 섞으므로 결과는 고르게 퍼진다.
@@ -21,6 +23,22 @@ const REF_COUNT = 10;
 /** value 를 [min, max] 로 제한 */
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+/** 0~1 을 양 끝이 완만한 곡선으로 (부드러운 시작·멈춤) */
+function smoothstep(x) {
+  return x * x * (3 - 2 * x);
+}
+
+/**
+ * value 가 target 을 tau 초의 빠르기로 따라간다 (1차 저역 필터, 넘치지 않음).
+ * @param {number} value
+ * @param {number} target
+ * @param {number} tau 초
+ * @param {number} h 초
+ */
+function follow(value, target, tau, h) {
+  return target + (value - target) * Math.exp(-h / tau);
 }
 
 export class SpinPhysics {
@@ -53,7 +71,9 @@ export class SpinPhysics {
 
     this.rotation = rotation;
     this.omega = 0;            // 돌림판 각속도
-    this.flapper = 0;          // 핀 휨 정도 (0 이상, 양수 = 끝이 도는 방향인 오른쪽으로)
+    this.flapper = 0;          // 핀 몸통 휨 정도 (0 이상, 양수 = 끝이 도는 방향인 오른쪽으로)
+    this.flapperTip = 0;       // 핀 끝 휨 정도 (몸통을 늦게 따라옴, 0 이상)
+    this._flapperLag = 0;      // 몸통을 부드럽게 만드는 중간 단계 값 (2단 저역 필터)
     /** @type {{index:number, side:number}|null} 핀에 걸린 기둥 (side 는 항상 -1: 왼쪽에서 들어옴) */
     this.engaged = null;
     this.elapsed = 0;
@@ -83,7 +103,7 @@ export class SpinPhysics {
 
   /** 돌림판과 막대가 모두 멈췄는지 */
   get finished() {
-    const flapperQuiet = this.flapper < 0.003;
+    const flapperQuiet = Math.max(this.flapper, this.flapperTip, this._flapperLag) < 0.003;
     return (this.stopped && (flapperQuiet || this.engaged)) || this.elapsed > this.p.maxSec;
   }
 
@@ -187,18 +207,22 @@ export class SpinPhysics {
   }
 
   /**
-   * 막대 기울기 갱신.
-   * 기둥에 닿아 있으면 기둥에 밀린 만큼 기울고, 풀리면 스프링처럼 흔들리며 돌아온다.
+   * 핀 모양 갱신 (보이는 것만, 돌림판 움직임에는 영향 없음).
+   * - 목표 휨: 기둥에 닿아 있으면 밀린 깊이만큼(부드러운 곡선), 아니면 0.
+   * - 몸통은 목표를 2단 저역 필터로 따라가 꺾임 없이 휘고, 펴질 때도 S자로 천천히 시작해 천천히 멈춘다.
+   * - 끝은 몸통을 한 번 더 늦게 따라와 천 자락처럼 끌린다.
+   * 모든 값은 0 이상 목표를 따라가므로 반대쪽으로 튕기지 않는다.
    * @param {number} h 초
    */
   _integrateFlapper(h) {
-    if (this.engaged) {
-      // 기둥에 닿아 있는 동안: 기둥이 민 만큼 도는 방향(오른쪽)으로 휜다
-      this.flapper = this.p.flapperMax * this._contactDepth();
-      return;
+    const target = this.p.flapperMax * smoothstep(this._contactDepth());
+    const rising = target > this._flapperLag;
+    const tau = rising ? this.p.flapperBendSec : this.p.flapperReturnSec / 2;
+    this._flapperLag = follow(this._flapperLag, target, tau, h);
+    this.flapper = follow(this.flapper, this._flapperLag, tau, h);
+    this.flapperTip = follow(this.flapperTip, this.flapper, this.p.flapperTipLagSec, h);
+    if (Math.max(this.flapper, this.flapperTip, this._flapperLag) < 1e-4) {
+      this.flapper = this.flapperTip = this._flapperLag = 0;
     }
-    // 기둥이 지나간 뒤: 천처럼 반대쪽으로 튕기지 않고 부드럽게 곧게 펴진다 (지수 감소, 0 밑으로 내려가지 않음)
-    this.flapper *= Math.exp(-h / this.p.flapperReturnSec);
-    if (this.flapper < 1e-4) this.flapper = 0;
   }
 }

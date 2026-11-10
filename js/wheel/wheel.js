@@ -28,6 +28,7 @@ export class Wheel {
     this.items = [];
     this.rotation = 0;
     this.flapper = 0;
+    this.flapperTip = 0;
     this.winnerIndex = -1;
     this.spinning = false;
     this.size = 0;
@@ -66,6 +67,7 @@ export class Wheel {
       items: this.items,
       rotation: this.rotation,
       flapper: this.flapper,
+      flapperTip: this.flapperTip,
       winnerIndex: this.spinning ? -1 : this.winnerIndex,
       emptyText: this.options.emptyText,
     });
@@ -118,7 +120,15 @@ export class Wheel {
         last = now;
         physics.advance(dt);
         this.rotation = physics.rotation;
+
+        // ▼▼▼ 핀 움직임 켜기/끄기 ▼▼▼
+        // 아래 두 줄이 켜져 있으면 핀이 기둥에 밀려 휘었다가 천처럼 펴진다.
+        // 두 줄을 주석(//) 처리하면 핀이 곧게 고정된다(this.flapper = 0 그대로).
+        // (핀 모양만 바뀌고, 돌림판이 기둥에 걸려 느려지는 움직임·결과는 똑같다)
         this.flapper = physics.flapper;
+        this.flapperTip = physics.flapperTip;
+        // ▲▲▲ 핀 움직임 켜기/끄기 ▲▲▲
+
         this.draw();
         if (physics.finished) resolve();
         else requestAnimationFrame(frame);
