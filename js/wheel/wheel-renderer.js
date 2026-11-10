@@ -47,10 +47,11 @@ const FLAPPER = { pivotY: 0.03, tipY: 0.125, baseWidth: 0.034, tipWidth: 0.012 }
  * @param {{label:string}[]} s.items
  * @param {number} s.rotation      회전 각도(라디안)
  * @param {number} s.winnerIndex   강조할 칸 (-1 이면 없음)
- * @param {number} s.flapper       막대 기울기(라디안, 양수 = 끝이 오른쪽)
+ * @param {number} s.flapper       핀 몸통 휨(라디안, 양수 = 오른쪽)
+ * @param {number} [s.flapperTip]  핀 끝 휨 (몸통보다 늦게 따라옴. 없으면 몸통과 같음)
  * @param {string} s.emptyText     항목이 없을 때 안내 문구
  */
-export function drawWheel(ctx, { size, items, rotation, winnerIndex, flapper, emptyText }) {
+export function drawWheel(ctx, { size, items, rotation, winnerIndex, flapper, flapperTip = flapper, emptyText }) {
   const g = geometry(size);
   ctx.clearRect(0, 0, size, size);
   drawRim(ctx, g);
@@ -62,7 +63,7 @@ export function drawWheel(ctx, { size, items, rotation, winnerIndex, flapper, em
     drawPegs(ctx, g, items.length, rotation);
   }
   drawHub(ctx, g);
-  drawFlapper(ctx, g, flapper);
+  drawFlapper(ctx, g, flapper, flapperTip);
 }
 
 /**
@@ -228,10 +229,12 @@ function drawHub(ctx, { c, hubR }) {
 
 /**
  * 12시 방향 핀. 위쪽 받침에 고정되어 있고, 몸통만 휘어진다(돌림판과 함께 돌지 않음).
- * 기둥에 밀리면 끝이 옆으로 휘었다가, 기둥이 지나가면 탄성으로 흔들리며 제자리로 돌아온다.
- * @param {number} angle 끝이 휜 정도(라디안). 양수면 끝이 오른쪽으로
+ * 기둥에 밀리면 도는 방향으로 휘었다가, 기둥이 지나가면 천 자락처럼 끝이 늦게 따라오며 곧게 펴진다.
+ * @param {number} base 몸통이 휜 정도(라디안). 양수면 오른쪽으로
+ * @param {number} tip  끝이 휜 정도(라디안)
  */
-function drawFlapper(ctx, { c, size }, angle) {
+function drawFlapper(ctx, { c, size }, base, tip) {
+  const angle = { base, tip };
   const pivotY = size * FLAPPER.pivotY;
   const len = size * (FLAPPER.tipY - FLAPPER.pivotY);
   const path = flapperOutline(len, angle, size * FLAPPER.baseWidth / 2, size * FLAPPER.tipWidth / 2);
@@ -251,9 +254,9 @@ function drawFlapper(ctx, { c, size }, angle) {
   ctx.shadowColor = 'transparent';
 
   // 끝 표시 (핀 끝을 따라 움직임)
-  const tip = flapperPoint(len, angle, 0.93);
+  const tipDot = flapperPoint(len, angle, 0.93);
   ctx.beginPath();
-  ctx.arc(tip[0], tip[1], size * FLAPPER.tipWidth * 0.5, 0, TAU);
+  ctx.arc(tipDot[0], tipDot[1], size * FLAPPER.tipWidth * 0.5, 0, TAU);
   ctx.fillStyle = COLORS.flapperTip;
   ctx.fill();
 
@@ -272,12 +275,14 @@ function drawFlapper(ctx, { c, size }, angle) {
 
 /**
  * 휘어진 핀 중심선 위의 점. 아래로 매달린 외팔보처럼, 받침 쪽은 곧고 끝으로 갈수록 많이 휜다.
+ * 휨 정도는 받침 쪽은 몸통 값, 끝으로 갈수록 끝 값에 가까워져서 천 자락처럼 끝이 늦게 따라온다.
  * @param {number} len   핀 길이
- * @param {number} angle 끝이 휜 정도
+ * @param {{base:number, tip:number}} bendAngles 몸통·끝이 휜 정도
  * @param {number} t     0(받침) ~ 1(끝)
  * @returns {[number, number]} 받침 기준 좌표 (y 는 아래가 +)
  */
-function flapperPoint(len, angle, t) {
+function flapperPoint(len, bendAngles, t) {
+  const angle = bendAngles.base + (bendAngles.tip - bendAngles.base) * t * t;
   const bend = 1.5 * t * t - 0.5 * t * t * t;            // 외팔보 처짐 모양 (t=1 에서 1)
   const x = len * Math.sin(angle) * bend;
   const y = len * t * (1 - (1 - Math.cos(angle)) * t * t * 0.9);  // 휘면 끝이 살짝 올라감
@@ -287,7 +292,7 @@ function flapperPoint(len, angle, t) {
 /**
  * 핀 몸통 외곽선 (받침은 넓고 끝은 좁은 휘어진 띠 + 둥근 끝).
  * @param {number} len
- * @param {number} angle
+ * @param {{base:number, tip:number}} angle 몸통·끝이 휜 정도
  * @param {number} baseHalf 받침 쪽 반폭
  * @param {number} tipHalf  끝 쪽 반폭
  * @returns {Array<[number, number]>}
