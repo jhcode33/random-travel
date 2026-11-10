@@ -13,6 +13,7 @@ import { loadTopology } from './data/topology-loader.js';
 import { RegionRepository } from './data/region-repository.js';
 import { loadRegionInfo } from './data/region-info-repository.js';
 import { SelectionModel } from './model/selection-model.js';
+import { VisitedStore } from './model/visited-store.js';
 import { StepIndicator } from './ui/step-indicator.js';
 import { RegionPopup } from './ui/region-popup.js';
 import { ResultModal } from './ui/result-modal.js';
@@ -65,7 +66,7 @@ function createApp(repo, info) {
     restart: () => { model.clear(); go.select(); },
   };
 
-  const selectView = new SelectView({ ...shared, onNext: go.pick });
+  const selectView = new SelectView({ ...shared, visited: new VisitedStore(), onNext: go.pick });
   const pickView = new PickView({ ...shared, onBack: go.select, onNext: go.detail, onRestart: go.restart });
   const detailView = new DetailView({ ...shared, onBack: go.pick, onRestart: go.restart });
 

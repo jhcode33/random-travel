@@ -12,17 +12,24 @@ import { fitTarget, labelAnchor, screenExtent, transformToFit } from './geo-util
 import { chooseVisibleLabels } from './label-layout.js';
 
 /** 지역 <path> 에 붙일 수 있는 상태 클래스 */
-const STATE_CLASSES = ['metro', 'selected', 'disabled', 'dim', 'winner'];
-/** 진한 배경이 되어 라벨을 흰 글씨로 바꿀 상태 (winner 는 밝은 금색이라 제외) */
-const DARK_STATES = ['selected'];
+const STATE_CLASSES = ['metro', 'selected', 'visited', 'disabled', 'dim', 'winner'];
+/** 진한 배경이 되어 라벨을 흰 글씨로 바꿀 상태 (선택 색·당첨 금색은 밝아서 검정 글씨 유지) */
+const DARK_STATES = ['visited'];
 /** 라벨을 항상 보여줄 상태 */
-const FORCE_LABEL_STATES = ['selected', 'winner'];
+const FORCE_LABEL_STATES = ['selected', 'visited', 'winner'];
+
+/** 경계선 굵기(px, 화면 기준): 시·군 경계 / 시·도 경계 */
+const REGION_LINE_PX = 1.2;
+const PROVINCE_LINE_PX = 2.6;
+/** 시·도 경계 흰 선 양옆의 회색 테두리 두께(px) */
+const PROVINCE_EDGE_PX = 0.9;
 
 /** 지도 가장자리 최소 여백(px): 가장자리 지역 라벨(약 4글자)의 절반 폭 */
 const MIN_PADDING_PX = 30;
 
 const DEFAULT_OPTIONS = {
   onClick: null,          // (feature, MouseEvent) => void
+  colorOf: null,          // (feature) => '#rrggbb' : 선택했을 때 칠할 지역별 색 (CSS 변수 --region-color 로 전달)
   fontSize: 13,           // 확대 1배일 때 라벨 글자 크기
   minLabelPx: 26,         // 이보다 작게 보이는 지역은 라벨 생략
   maxZoom: 14,
@@ -126,6 +133,8 @@ export class KoreaMap {
     this.svg = d3.select(this.svgEl);
     this.root = this.svg.append('g');
     this.regionLayer = this.root.append('g').attr('class', 'regions');
+    // 시·도 경계: 회색 테두리(아래) + 흰 선(위) 두 겹으로 그려 시·군 경계보다 또렷하게
+    this.outlineEdgePath = this.root.append('path').attr('class', 'outline-edge');
     this.outlinePath = this.root.append('path').attr('class', 'outline');
     this.labelLayer = this.root.append('g');
   }
@@ -188,12 +197,14 @@ export class KoreaMap {
 
   /** 지역 <path> 를 그리고 클릭·툴팁을 연결한다. */
   _drawRegions() {
-    const onClick = this.options.onClick;
+    const { onClick, colorOf } = this.options;
     this.regionLayer.selectAll('path')
       .data(this.features, (d) => d.id)
       .join('path')
       .attr('class', 'region')
       .attr('d', this.path)
+      // 지역별 색은 CSS 변수로 넘기고, 실제로 칠할지는 상태 클래스(.selected 등)가 정한다
+      .style('--region-color', colorOf ? (d) => colorOf(d) : null)
       .on('click', (ev, d) => {
         if (!ev.defaultPrevented && onClick) onClick(d, ev);
       })
@@ -203,7 +214,9 @@ export class KoreaMap {
 
   /** 시·도 경계선 같은 추가 선을 그린다. */
   _drawOutline() {
-    this.outlinePath.attr('d', this.outline ? this.path(this.outline) : null);
+    const d = this.outline ? this.path(this.outline) : null;
+    this.outlineEdgePath.attr('d', d);
+    this.outlinePath.attr('d', d);
   }
 
   /** 라벨 <text> 를 그린다. */
@@ -254,8 +267,10 @@ export class KoreaMap {
     const fontSize = this.options.fontSize / Math.pow(k, 0.85); // 확대할수록 약간만 커지게
     const visible = this._visibleLabelIds(k, fontSize * k);
 
-    this.regionLayer.selectAll('path').attr('stroke-width', 1 / k);
-    this.outlinePath.attr('stroke-width', 2.2 / k);
+    // 경계선 굵기는 확대해도 화면에서 일정하게 (시·군 가늘게, 시·도 굵게)
+    this.regionLayer.selectAll('path').attr('stroke-width', REGION_LINE_PX / k);
+    this.outlineEdgePath.attr('stroke-width', (PROVINCE_LINE_PX + PROVINCE_EDGE_PX * 2) / k);
+    this.outlinePath.attr('stroke-width', PROVINCE_LINE_PX / k);
     this.labelLayer.selectAll('text')
       .attr('font-size', fontSize)
       .attr('stroke-width', 3 / k)

@@ -87,6 +87,8 @@ export class SelectionPanel {
    */
   _chip(unit, order) {
     const li = document.createElement('li');
+    // 지도에서 칠해진 색과 같은 색으로 (어느 지역인지 한눈에 맞춰 보기 쉽게)
+    if (unit.color) li.style.setProperty('--chip-color', unit.color);
 
     const name = document.createElement('button');
     name.type = 'button';

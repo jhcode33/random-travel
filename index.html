@@ -34,13 +34,21 @@
   <!-- ===== 1페이지: 여행 후보 선택 (js/views/select-view.js) ===== -->
   <main id="view-select" class="page page-select">
     <section class="card map-card">
-      <div class="card-head row">
-        <div>
+      <div class="card-head select-head">
+        <div class="head-top">
           <h2>여행 후보 고르기</h2>
-          <p class="hint"><span class="lbl-long">지역을 누르면 후보에 담깁니다. 아래 '선택한 여행지'에서 이름을 누르면 여행 정보가 나옵니다. 광역시는 시 전체, 도는 시·군 단위입니다.</span><span class="lbl-short">지역을 눌러 담고, 아래 이름을 누르면 여행 정보가 나와요.</span></p>
+          <!-- 지도를 눌렀을 때 할 일: 후보 고르기 / 다녀온 곳 표시 -->
+          <div class="mode-switch" role="radiogroup" aria-label="지도를 눌렀을 때">
+            <button type="button" role="radio" id="mode-pick" class="mode-btn" aria-checked="true">🎯 후보<span class="lbl-long"> 고르기</span></button>
+            <button type="button" role="radio" id="mode-visited" class="mode-btn" aria-checked="false">🧳 다녀온 곳<span class="lbl-long"> 표시</span> <span id="visited-count" class="mode-count">0</span></button>
+          </div>
         </div>
+
+        <p class="hint" data-mode="pick"><span class="lbl-long">지역을 누르면 후보에 담깁니다. 아래 '선택한 여행지'에서 이름을 누르면 여행 정보가 나옵니다. 광역시는 시 전체, 도는 시·군 단위입니다.</span><span class="lbl-short">지역을 눌러 담고, 아래 이름을 누르면 여행 정보가 나와요.</span></p>
+        <p class="hint" data-mode="visited" hidden><span class="lbl-long">이미 다녀온 지역을 누르면 '다녀온 곳'으로 표시되고, 후보 선택과 무작위 채우기에서 빠집니다. 다시 누르면 해제됩니다. (이 브라우저에 저장)</span><span class="lbl-short">다녀온 지역을 누르면 표시되고 후보에서 빠져요.</span></p>
+
         <div class="toolbar">
-          <div class="target-row">
+          <div class="target-row" data-mode="pick">
             <label for="target-count">후보<span class="lbl-long"> 개수</span></label>
             <div class="stepper">
               <button type="button" id="btn-target-dec" aria-label="개수 줄이기">－</button>
@@ -48,14 +56,26 @@
               <button type="button" id="btn-target-inc" aria-label="개수 늘리기">＋</button>
             </div>
           </div>
-          <div class="btn-group">
+          <div class="btn-group" data-mode="pick">
             <button type="button" id="btn-random-fill" class="btn">무작위<span class="lbl-long"> 채우기</span></button>
             <button type="button" id="btn-clear" class="btn">초기화</button>
+          </div>
+          <div class="btn-group" data-mode="visited" hidden>
+            <button type="button" id="btn-clear-visited" class="btn">다녀온 곳 모두 해제</button>
+            <button type="button" id="btn-visited-done" class="btn primary">완료</button>
           </div>
         </div>
       </div>
       <div id="select-map-wrap" class="map-wrap">
-        <svg id="select-map" class="map" role="img" aria-label="대한민국 지도"></svg>
+        <svg id="select-map" class="map" role="img" aria-label="대한민국 지도">
+          <!-- '다녀온 곳' 무늬: 회청색 바탕 + 흰 사선 (css/map.css 의 .region.visited) -->
+          <defs>
+            <pattern id="visited-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="7" height="7" fill="#8e9bab" />
+              <line x1="0" y1="0" x2="0" y2="7" stroke="#ffffff" stroke-opacity=".45" stroke-width="2.5" />
+            </pattern>
+          </defs>
+        </svg>
         <div id="app-status" class="app-status">지도를 불러오는 중…</div>
         <div class="zoom-ctrl">
           <button type="button" data-zoom="in" aria-label="확대">＋</button>
@@ -66,6 +86,7 @@
           <span><i class="lg-land"></i>시·군</span>
           <span><i class="lg-metro"></i>광역시</span>
           <span><i class="lg-selected"></i>선택한 후보</span>
+          <span><i class="lg-visited"></i>다녀온 곳</span>
         </div>
       </div>
     </section>
