@@ -1,0 +1,23 @@
+# 자동 검사: PR 을 올리거나 main 에 push 하면 실행된다.
+# 빌드·외부 패키지 없이 Node 내장 테스트(node --test)만 쓴다. 자세한 내용은 tests/ 폴더.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 테스트 (문법 · 데이터 · 후보 선택 · 돌림판 물리)
+        run: npm test

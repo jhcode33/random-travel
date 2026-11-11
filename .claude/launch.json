@@ -4,7 +4,7 @@
     {
       "name": "static",
       "runtimeExecutable": "node",
-      "runtimeArgs": [".claude/serve.js"],
+      "runtimeArgs": [".claude/serve.cjs"],
       "port": 8765
     }
   ]

@@ -105,6 +105,22 @@ npx serve .
 ```
 또는 `python -m http.server 8000` 후 http://localhost:8000 접속.
 
+## 테스트 (CI)
+Node 20 이상만 있으면 됩니다 (외부 패키지 없음).
+```bash
+npm test
+```
+PR 을 올리거나 `main` 에 push 하면 GitHub Actions(`.github/workflows/ci.yml`)가 같은 테스트를 자동으로 돌립니다.
+
+| 파일 | 검사 내용 |
+|---|---|
+| `tests/syntax.test.js` | 모든 `js/` 파일이 문법 오류 없이 읽히는지 |
+| `tests/data.test.js` | 경계·여행 정보 데이터 형식, 선택 단위 161곳, 행정구역 보정, 모든 지역이 세부 돌림판으로 넘어가는지 |
+| `tests/selection-model.test.js` | 후보 담기·빼기·개수 조절·무작위 채우기 |
+| `tests/wheel-physics.test.js` | 돌림판 공정성, 회전 시간 범위, 핀이 반대로 튕기지 않는지 |
+
+`WHEEL_PHYSICS` 를 바꿔 회전 시간이 크게 달라지면 `tests/wheel-physics.test.js` 의 `TIMING` 범위도 함께 고치세요.
+
 ## GitHub Pages 배포
 ```bash
 git init

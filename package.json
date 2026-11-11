@@ -1,0 +1,12 @@
+{
+  "name": "random-travel",
+  "private": true,
+  "description": "랜덤 여행 돌림판 (정적 웹페이지). 이 파일은 테스트 실행용이며, 빌드 과정이나 외부 패키지는 없다.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
